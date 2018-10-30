@@ -8,7 +8,11 @@
 # Should work on Debian and Redhat derivatives.
 # Needs root privileges.
 #
-# Usage: bash ovmg.sh -(a|r) name
+# Flags
+# -a <name> : Add a new user named <name>
+# -l        : List all users
+# -r <name> : Revoke user <name>
+#
 
 if readlink /proc/$$/exe | grep -q "dash"; then
     echo "ovmg.sh needs to run with bash."
@@ -38,14 +42,14 @@ name=""
 arg_count=0
 
 # Get the flags inside the variables
-while getopts 'a:r:' flag; do
+while getopts 'a:r:l' flag; do
   case "${flag}" in
     a)
         mode="add"
         name="${OPTARG}"
         arg_count=$arg_count+1
         if (($arg_count > 1)); then
-            echo "supply only one of -a (add) or -r (revoke) flags"
+            echo "supply only one flag"
             exit
         fi
     ;;
@@ -54,7 +58,15 @@ while getopts 'a:r:' flag; do
         name=${OPTARG}
         arg_count=$arg_count+1
         if (($arg_count > 1)); then
-            echo "supply only one of -a (add) or -r (revoke) flags"
+            echo "supply only one flag"
+            exit
+        fi
+    ;;
+    l)
+        mode="list"
+        arg_count=$arg_count+1
+        if (($arg_count > 1)); then
+            echo "supply only one flag"
             exit
         fi
     ;;
@@ -63,7 +75,7 @@ while getopts 'a:r:' flag; do
   esac
 done
 
-# Add or revoke user
+# List users, or add/revoke user
 if [[ $mode = "add" ]]; then
     echo "ADDING $name"
     cd /etc/openvpn/easy-rsa/
@@ -102,4 +114,10 @@ elif [[ $mode = "revoke" ]]; then
 	chown nobody:$GROUPNAME /etc/openvpn/crl.pem
     echo "privileges for $name revoked"
 	exit
+elif [[ $mode = "list" ]]; then
+    tail -n +2 /etc/openvpn/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2
+    exit
+else
+    echo "invalid argument"
+    exit
 fi

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script>
+        var ajax = new XMLHttpRequest();
+        var ajaxResponse = "";
+        ajax.onreadystatechange = function () {
+            if (ajax.readyState === 4) {
+                ajaxResponse = ajax.responseText;
+                document.getElementById("output").innerText = ajaxResponse;
+            }
+        }
+        
+        function listele () {
+            ajax.open("GET", "http://fr.nat.koc.pm:51342/l");
+            ajax.send();
+        }
+
+        function ops () {
+            var data = {};
+            data["client"] = document.getElementById("client").value;
+            
+            var flags = document.getElementsByName("flag");
+            for (let i = 0; i < 2; i++) {
+                if (flags[i].checked) {data["flag"] = flags[i].value};
+            }
+
+            ajax.open("POST", "http://fr.nat.koc.pm:51342/o");
+            ajax.setRequestHeader("Content-type","application/json; charset=UTF-8");
+            ajax.send(JSON.stringify(data));
+        }
+
+        function download(filename, text) {
+            var element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename);
+
+            element.style.display = 'none';
+            document.body.appendChild(element);
+
+            element.click();
+
+            document.body.removeChild(element);
+        }
+            </script>
+    </head>
+    <body>
+        <input type="button" onclick="listele()" value="  Listele  " />
+        <input type="button" id="indir" onclick="download('config.ovpn', ajaxResponse);" value="Dwnld .ovpn" />
+        <br />
+        <input type="text" id="client" />
+        <input type="radio" name="flag" id="add" value="a" />
+        <label for="add">Add</label>
+        <input type="radio" name="flag" id="revoke" value="r" />
+        <label for="revoke">Revoke</label>
+        <input type="button" onclick="ops()" value=" GO " />
+        <div id="output"></div>
+    </body>
+</html>

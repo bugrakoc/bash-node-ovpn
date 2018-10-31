@@ -77,7 +77,6 @@ done
 
 # List users, or add/revoke user
 if [[ $mode = "add" ]]; then
-    echo "ADDING $name"
     cd /etc/openvpn/easy-rsa/
     EASYRSA_CERT_EXPIRE=3650 ./easyrsa build-client-full $name nopass
     # Output the custom client.ovpn
@@ -115,7 +114,7 @@ elif [[ $mode = "revoke" ]]; then
     echo "privileges for $name revoked"
 	exit
 elif [[ $mode = "list" ]]; then
-    tail -n +2 /etc/openvpn/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2
+    tail -n +2 /etc/openvpn/easy-rsa/pki/index.txt | grep "^V" | cut -d '=' -f 2 | nl -s ') '
     exit
 else
     echo "invalid argument"
